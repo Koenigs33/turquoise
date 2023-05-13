@@ -1,2 +1,4 @@
 /target
 /dist
+src/assets/*.svg
+.DS_Store
