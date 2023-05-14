@@ -1,7 +1,10 @@
 use components::navbar;
 use yew::prelude::*;
 
-use crate::components::tile::{Tile, TileColor};
+use crate::components::{
+    board::PlayerBoard,
+    tile::{Tile, TileColor},
+};
 
 mod components;
 
@@ -11,11 +14,7 @@ fn app() -> Html {
         <>
             <navbar::NavBar/>
             <div>
-                <Tile color={TileColor::Red} light=true/>
-                <Tile color={TileColor::Yellow} light=false/>
-                <Tile color={TileColor::Blue} light=true/>
-                <Tile color={TileColor::Purple} light=false/>
-                <Tile color={TileColor::Green} light=true/>
+                <PlayerBoard/>
             </div>
         </>
     }
