@@ -69,7 +69,7 @@ impl Component for PlayerBoardRow {
         <tr>
             {
                 for colors.iter().map(|c| html_nested!(
-                    <td><Tile color={(*c).clone()} light=true/></td>
+                    <td><Tile color={(*c).clone()} hatched=true/></td>
                 ))
             }
         </tr>

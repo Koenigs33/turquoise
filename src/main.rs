@@ -1,10 +1,7 @@
 use components::navbar;
 use yew::prelude::*;
 
-use crate::components::{
-    board::PlayerBoard,
-    tile::{Tile, TileColor},
-};
+use crate::components::board::PlayerBoard;
 
 mod components;
 

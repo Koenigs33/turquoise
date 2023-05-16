@@ -1,6 +1,8 @@
 use yew::{function_component, html, Component, Context, Html, Properties};
 
-pub struct Tile;
+pub struct Tile {
+    hatched: bool,
+}
 
 #[derive(PartialEq, Clone)]
 pub enum TileColor {
@@ -14,7 +16,11 @@ pub enum TileColor {
 #[derive(Properties, PartialEq)]
 pub struct TileProps {
     pub color: TileColor,
-    pub light: bool,
+    pub hatched: bool,
+}
+
+pub enum TileMsg {
+    Clicked,
 }
 
 impl TileColor {
@@ -30,28 +36,39 @@ impl TileColor {
 }
 
 impl Component for Tile {
-    type Message = ();
+    type Message = TileMsg;
     type Properties = TileProps;
 
-    fn create(_: &Context<Self>) -> Self {
-        Self
+    fn create(ctx: &Context<Self>) -> Self {
+        Self {
+            hatched: ctx.props().hatched,
+        }
+    }
+
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+        match msg {
+            TileMsg::Clicked => self.hatched = !self.hatched,
+        }
+        true
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let color = ctx.props().color.clone();
-        let hatch = ctx.props().light;
+        let onclick = ctx.link().callback(|_| TileMsg::Clicked);
         html! {
-        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
-            <rect x="0" y="0" width="80" height="80" fill="#ffffff"></rect>
-            <g stroke-linecap="round" transform="translate(10 10) rotate(0 30 30)">
-                if hatch {
-                    <TileHatchFill color={color}/>
-                } else {
-                    <TileSolidFill color={color}/>
-                }
-            <TileRect/>
-            </g>
-        </svg>
+            <div onclick={onclick}>
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+                    <rect x="0" y="0" width="80" height="80" fill="#ffffff"></rect>
+                    <g stroke-linecap="round" transform="translate(10 10) rotate(0 30 30)">
+                        if self.hatched {
+                            <TileHatchFill color={color}/>
+                        } else {
+                            <TileSolidFill color={color}/>
+                        }
+                    <TileRect/>
+                    </g>
+                </svg>
+            </div>
         }
     }
 }
