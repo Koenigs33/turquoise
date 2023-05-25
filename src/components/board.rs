@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use yew::{html, html_nested, Component, Context, Html, Properties};
+use yew::{function_component, html, html_nested, Component, Context, Html, Properties};
 
 use crate::components::tile::{Tile, TileColor};
 
@@ -12,16 +12,12 @@ const COLOR_SEQUENCE: [TileColor; 5] = [
     TileColor::Yellow,
 ];
 
-pub enum PlayerBoardMsg {}
-
-#[derive(PartialEq, Properties)]
-pub struct PlayerBoardProps {}
-
+/// Represents the tiles already validated
 pub struct PlayerBoard;
 
 impl Component for PlayerBoard {
-    type Message = PlayerBoardMsg;
-    type Properties = PlayerBoardProps;
+    type Message = ();
+    type Properties = ();
 
     fn create(_ctx: &Context<Self>) -> Self {
         Self
@@ -29,7 +25,7 @@ impl Component for PlayerBoard {
 
     fn view(&self, _ctx: &Context<Self>) -> Html {
         html! {
-            <table>
+            <table class="m-big">
                 <tbody>
                     {
                         for COLOR_SEQUENCE.iter().map(
@@ -68,11 +64,60 @@ impl Component for PlayerBoardRow {
         html! {
         <tr>
             {
-                for colors.iter().map(|c| html_nested!(
-                    <td><Tile color={(*c).clone()} hatched=true/></td>
-                ))
+                colors.iter().map(|c| html_nested!(
+                    <td><Tile color={(*c).clone()} hatched=true filled=true/></td>
+                )).collect::<Html>()
             }
         </tr>
         }
+    }
+}
+
+/// Current selected tiles to be constructed
+pub struct CurrentRoundBoard;
+
+impl Component for CurrentRoundBoard {
+    type Properties = ();
+    type Message = ();
+
+    fn create(_ctx: &Context<Self>) -> Self {
+        Self
+    }
+
+    fn view(&self, _ctx: &Context<Self>) -> Html {
+        html! {
+            <table class="m-big">
+                <tbody>
+                    {
+                        (0..5).map(|i| html_nested!(<tr><CurrentRoundBoardRow size={i+1}/></tr>))
+                            .collect::<Html>()
+                    }
+                </tbody>
+            </table>
+        }
+    }
+}
+
+#[derive(PartialEq, Properties)]
+pub struct CurrentRoundBoardRowProps {
+    size: u8,
+}
+
+#[function_component]
+pub fn CurrentRoundBoardRow(props: &CurrentRoundBoardRowProps) -> Html {
+    let CurrentRoundBoardRowProps { size } = props;
+    let empty_tiles = 0..(5 - size);
+    let tiles = 0..*size;
+    html! {
+        <>
+            {
+                empty_tiles.map(|_| html_nested!(<td></td>))
+                    .collect::<Html>()
+            }
+            {
+                tiles.map(|_| html_nested!(<td><Tile color={TileColor::Blue} hatched=true filled=false/></td>))
+                    .collect::<Html>()
+            }
+        </>
     }
 }

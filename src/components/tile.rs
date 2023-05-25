@@ -2,6 +2,7 @@ use yew::{function_component, html, Component, Context, Html, Properties};
 
 pub struct Tile {
     hatched: bool,
+    filled: bool,
 }
 
 #[derive(PartialEq, Clone)]
@@ -17,6 +18,7 @@ pub enum TileColor {
 pub struct TileProps {
     pub color: TileColor,
     pub hatched: bool,
+    pub filled: bool,
 }
 
 pub enum TileMsg {
@@ -42,6 +44,7 @@ impl Component for Tile {
     fn create(ctx: &Context<Self>) -> Self {
         Self {
             hatched: ctx.props().hatched,
+            filled: ctx.props().filled,
         }
     }
 
@@ -60,10 +63,12 @@ impl Component for Tile {
                 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
                     <rect x="0" y="0" width="80" height="80" fill="#ffffff"></rect>
                     <g stroke-linecap="round" transform="translate(10 10) rotate(0 30 30)">
-                        if self.hatched {
-                            <TileHatchFill color={color}/>
-                        } else {
-                            <TileSolidFill color={color}/>
+                        if self.filled{
+                            if self.hatched {
+                                <TileHatchFill color={color}/>
+                            } else {
+                                <TileSolidFill color={color}/>
+                            }
                         }
                     <TileRect/>
                     </g>
@@ -101,7 +106,7 @@ fn TileHatchFill(props: &TileFillProps) -> Html {
 }
 
 #[function_component]
-fn TileRect() -> Html {
+pub fn TileRect() -> Html {
     html! {
         <path
             d="M-0.06 -1.98 C19.45 -2.01, 38.61 0.49, 61.86 -0.11 M-0.66 -0.26 C22.94 -0.26, 43.56 -0.27, 60.23 0.3 M59 1.98 C62.04 13.72, 58.33 26.53, 60.33 58.46 M60.14 0.93 C59.59 12.8, 58.82 25.75, 60.55 60.62 M59.7 61.56 C39.01 59.52, 16.71 61.26, -1.7 58.04 M59.08 60.52 C45.43 60.75, 29.13 60.99, 0.32 59.98 M0.5 59.45 C0.23 48.05, -0.1 34.04, -1.1 -1.44 M0.78 59.44 C-0.71 39.59, -0.51 18.93, -0.43 0.7"

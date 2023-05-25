@@ -1,7 +1,7 @@
 use components::navbar;
 use yew::prelude::*;
 
-use crate::components::board::PlayerBoard;
+use crate::components::board::{CurrentRoundBoard, PlayerBoard};
 
 mod components;
 
@@ -10,8 +10,11 @@ fn app() -> Html {
     html! {
         <>
             <navbar::NavBar/>
-            <div>
-                <PlayerBoard/>
+            <div class="container">
+                <div class="row">
+                    <CurrentRoundBoard/>
+                    <PlayerBoard/>
+                </div>
             </div>
         </>
     }
