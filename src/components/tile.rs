@@ -61,7 +61,6 @@ impl Component for Tile {
         html! {
             <div onclick={onclick}>
                 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
-                    <rect x="0" y="0" width="80" height="80" fill="#ffffff"></rect>
                     <g stroke-linecap="round" transform="translate(10 10) rotate(0 30 30)">
                         if self.filled{
                             if self.hatched {
