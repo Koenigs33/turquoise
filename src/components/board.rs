@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use yew::{function_component, html, html_nested, Component, Context, Html, Properties};
 
-use crate::components::tile::{Tile, TileColor};
+use crate::components::tile::{Tile, TileColor, TilePosition};
 
 const COLOR_SEQUENCE: [TileColor; 5] = [
     TileColor::Blue,
@@ -29,7 +29,7 @@ impl Component for PlayerBoard {
                 <tbody>
                     {
                         for COLOR_SEQUENCE.iter().map(
-                            |c| html_nested!(<PlayerBoardRow start_color={(*c).clone()}/>)
+                            |c| html!(<PlayerBoardRow start_color={(*c).clone()}/>)
                         )
                     }
                 </tbody>
@@ -64,8 +64,8 @@ impl Component for PlayerBoardRow {
         html! {
         <tr>
             {
-                colors.iter().map(|c| html_nested!(
-                    <td><Tile color={(*c).clone()} hatched=true filled=true/></td>
+                colors.iter().map(|c| html!(
+                    <td><Tile color={(*c).clone()} hatched=true filled=true position={TilePosition::PlayerBoard}/></td>
                 )).collect::<Html>()
             }
         </tr>
@@ -110,13 +110,13 @@ pub fn CurrentRoundBoardRow(props: &CurrentRoundBoardRowProps) -> Html {
     let tiles = 0..*size;
     html! {
         <>
+            { for empty_tiles.map(|_| html!{<td></td>}) }
             {
-                empty_tiles.map(|_| html_nested!(<td></td>))
-                    .collect::<Html>()
-            }
-            {
-                tiles.map(|_| html_nested!(<td><Tile color={TileColor::Blue} hatched=true filled=false/></td>))
-                    .collect::<Html>()
+                for tiles.map(|_| html!{
+                    <td>
+                        <Tile color={TileColor::Blue} hatched=true filled=false position={TilePosition::CurrentBoard}/>
+                    </td>
+                })
             }
         </>
     }

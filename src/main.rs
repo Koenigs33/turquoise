@@ -1,27 +1,23 @@
 use components::navbar;
 use yew::prelude::*;
 
-use crate::components::{
-    board::{CurrentRoundBoard, PlayerBoard},
-    pot::PotArea,
+use crate::{
+    components::{
+        board::{CurrentRoundBoard, PlayerBoard},
+        pot::PotArea,
+    },
+    game::Game,
 };
 
 mod components;
+mod game;
 
 #[function_component(App)]
 fn app() -> Html {
     html! {
         <>
             <navbar::NavBar/>
-            <div>
-                <PotArea/>
-            </div>
-            <div class="container">
-                <div class="row">
-                    <CurrentRoundBoard/>
-                    <PlayerBoard/>
-                </div>
-            </div>
+            <Game/>
         </>
     }
 }

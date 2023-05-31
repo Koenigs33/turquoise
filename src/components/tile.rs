@@ -1,8 +1,8 @@
+use rand::{thread_rng, Rng};
 use yew::{function_component, html, Component, Context, Html, Properties};
 
 pub struct Tile {
-    hatched: bool,
-    filled: bool,
+    selected: bool,
 }
 
 #[derive(PartialEq, Clone)]
@@ -12,17 +12,6 @@ pub enum TileColor {
     Green,
     Purple,
     Blue,
-}
-
-#[derive(Properties, PartialEq)]
-pub struct TileProps {
-    pub color: TileColor,
-    pub hatched: bool,
-    pub filled: bool,
-}
-
-pub enum TileMsg {
-    Clicked,
 }
 
 impl TileColor {
@@ -37,36 +26,72 @@ impl TileColor {
     }
 }
 
+impl Default for TileColor {
+    fn default() -> Self {
+        Self::Blue
+    }
+}
+
+#[derive(PartialEq)]
+pub enum TilePosition {
+    Pot,
+    CommonPot,
+    CurrentBoard,
+    PlayerBoard,
+}
+
+#[derive(Properties, PartialEq)]
+pub struct TileProps {
+    #[prop_or_default]
+    pub color: TileColor,
+    #[prop_or_default]
+    pub hatched: bool,
+    #[prop_or(true)]
+    pub filled: bool,
+    pub position: TilePosition,
+}
+
+pub enum TileMsg {
+    Clicked,
+}
+
 impl Component for Tile {
     type Message = TileMsg;
     type Properties = TileProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        Self {
-            hatched: ctx.props().hatched,
-            filled: ctx.props().filled,
-        }
+    fn create(_ctx: &Context<Self>) -> Self {
+        Self { selected: false }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            TileMsg::Clicked => self.hatched = !self.hatched,
+            TileMsg::Clicked => match ctx.props().position {
+                TilePosition::Pot => self.selected = !self.selected,
+                TilePosition::CommonPot => self.selected = !self.selected,
+                TilePosition::CurrentBoard => self.selected = !self.selected,
+                TilePosition::PlayerBoard => {}
+            },
         }
         true
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let color = ctx.props().color.clone();
         let onclick = ctx.link().callback(|_| TileMsg::Clicked);
+        let TileProps {
+            color,
+            hatched,
+            filled,
+            position: _,
+        } = ctx.props();
         html! {
             <div onclick={onclick}>
                 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
                     <g stroke-linecap="round" transform="translate(10 10) rotate(0 30 30)">
-                        if self.filled{
-                            if self.hatched {
-                                <TileHatchFill color={color}/>
+                        if *filled{
+                            if *hatched {
+                                <TileHatchFill color={color.to_owned()}/>
                             } else {
-                                <TileSolidFill color={color}/>
+                                <TileSolidFill color={color.to_owned()}/>
                             }
                         }
                     <TileRect/>

@@ -1,24 +1,29 @@
 use yew::{function_component, html, Component, Context, Html, Properties};
 
-use crate::components::tile::{Tile, TileColor};
+use crate::{
+    components::tile::{Tile, TileColor, TilePosition},
+    game::PotState,
+};
 
 #[derive(PartialEq, Properties)]
-pub struct PotAreaProps {}
+pub struct PotAreaProps {
+    pub pots_state: PotState,
+}
 
 #[function_component]
 pub fn PotArea(props: &PotAreaProps) -> Html {
-    let PotAreaProps {} = props;
+    let PotAreaProps { pots_state } = props;
     html! {
         <div class="p-big bg-info">
             <div class="row">
-                <Pot/>
-                <Pot/>
-                <Pot/>
-                <Pot/>
-                <Pot/>
+                {
+                    for pots_state.pots.values().map(|v| {
+                        html!(<Pot tiles={(*v).clone()}/>)
+                    })
+                }
             </div>
             <div class="row">
-                <CommonPot/>
+                <CommonPot tiles={pots_state.common_pot.clone()}/>
             </div>
         </div>
     }
@@ -27,7 +32,9 @@ pub fn PotArea(props: &PotAreaProps) -> Html {
 pub struct CommonPot;
 
 #[derive(Properties, PartialEq)]
-pub struct CommonPotProps {}
+pub struct CommonPotProps {
+    tiles: Vec<TileColor>,
+}
 
 pub enum CommonPotMsg {}
 
@@ -39,14 +46,15 @@ impl Component for CommonPot {
         Self
     }
 
-    fn view(&self, _ctx: &Context<Self>) -> Html {
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let CommonPotProps { tiles } = ctx.props();
         html! {
             <div class="col-sm container-small">
                 <div class="container p-big">
                     <div class="row bg-gray-light border">
                         {
-                            for (0..15).map(|_| html!{
-                                <Tile color={TileColor::Blue} hatched=false filled=true/>
+                            for tiles.iter().map(|c| html!{
+                                <Tile color={(*c).clone()} hatched=false filled=true position={TilePosition::CommonPot}/>
                             })
                         }
                     </div>
@@ -59,7 +67,9 @@ impl Component for CommonPot {
 pub struct Pot;
 
 #[derive(Properties, PartialEq)]
-pub struct PotProps {}
+pub struct PotProps {
+    tiles: Vec<TileColor>,
+}
 
 pub enum PotMsg {}
 
@@ -71,16 +81,17 @@ impl Component for Pot {
         Self
     }
 
-    fn view(&self, _ctx: &Context<Self>) -> Html {
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let PotProps { tiles } = ctx.props();
         html! {
             <div class="col-sm container-small">
                 <div class="container p-big">
                     <div class="row bg-gray-light border">
-                        <Tile color={TileColor::Blue} hatched=false filled=true/>
-                        <Tile color={TileColor::Blue} hatched=false filled=true/>
-                        <Tile color={TileColor::Blue} hatched=false filled=true/>
-                        <Tile color={TileColor::Blue} hatched=false filled=true/>
-                        <Tile color={TileColor::Blue} hatched=false filled=true/>
+                        {
+                            for tiles.iter().map(|c| html!{
+                                <Tile position={TilePosition::Pot} color={(*c).clone()}/>
+                            })
+                        }
                     </div>
                 </div>
             </div>
