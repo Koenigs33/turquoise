@@ -1,11 +1,12 @@
-use rand::{thread_rng, Rng};
-use yew::{function_component, html, Component, Context, Html, Properties};
+use gloo_console::log;
+use yew::{function_component, html, AttrValue, Callback, Component, Context, Html, Properties};
 
 pub struct Tile {
     selected: bool,
+    id: usize,
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum TileColor {
     Red,
     Yellow,
@@ -32,23 +33,39 @@ impl Default for TileColor {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Debug)]
+pub struct TileState {
+    pub id: usize,
+    pub color: TileColor,
+    pub position: TilePosition,
+}
+
+impl TileState {
+    pub fn new(id: usize, color: TileColor) -> Self {
+        Self {
+            id,
+            color,
+            position: TilePosition::Reserve,
+        }
+    }
+}
+
+#[derive(PartialEq, Clone, Debug)]
 pub enum TilePosition {
-    Pot,
+    Reserve,
+    Pot(u8),
     CommonPot,
-    CurrentBoard,
-    PlayerBoard,
+    CurrentBoard(AttrValue),
+    PlayerBoard(AttrValue),
+    Bin,
 }
 
 #[derive(Properties, PartialEq)]
 pub struct TileProps {
     #[prop_or_default]
     pub color: TileColor,
-    #[prop_or_default]
-    pub hatched: bool,
-    #[prop_or(true)]
-    pub filled: bool,
-    pub position: TilePosition,
+    pub click_handler: Callback<()>,
+    pub id: usize,
 }
 
 pub enum TileMsg {
@@ -59,18 +76,27 @@ impl Component for Tile {
     type Message = TileMsg;
     type Properties = TileProps;
 
-    fn create(_ctx: &Context<Self>) -> Self {
-        Self { selected: false }
+    fn create(ctx: &Context<Self>) -> Self {
+        let id = ctx.props().id;
+        Self {
+            id,
+            selected: false,
+        }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+        let TileProps {
+            color,
+            click_handler,
+            id,
+        } = ctx.props();
+
         match msg {
-            TileMsg::Clicked => match ctx.props().position {
-                TilePosition::Pot => self.selected = !self.selected,
-                TilePosition::CommonPot => self.selected = !self.selected,
-                TilePosition::CurrentBoard => self.selected = !self.selected,
-                TilePosition::PlayerBoard => {}
-            },
+            TileMsg::Clicked => {
+                log!(format!("Tile clicked : {:?}", self.id));
+                click_handler.emit(());
+                self.selected = !self.selected;
+            }
         }
         true
     }
@@ -79,21 +105,19 @@ impl Component for Tile {
         let onclick = ctx.link().callback(|_| TileMsg::Clicked);
         let TileProps {
             color,
-            hatched,
-            filled,
-            position: _,
+            click_handler: _,
+            id: _,
         } = ctx.props();
         html! {
             <div onclick={onclick}>
                 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
                     <g stroke-linecap="round" transform="translate(10 10) rotate(0 30 30)">
-                        if *filled{
-                            if *hatched {
-                                <TileHatchFill color={color.to_owned()}/>
-                            } else {
-                                <TileSolidFill color={color.to_owned()}/>
-                            }
-                        }
+                        <path
+                            d="M-1.35 -1.68 L61.7 0.41 L59.46 59.49 L-0.95 60.85"
+                            stroke="none"
+                            stroke-width="0"
+                            fill={color.value().to_owned()}
+                        />
                     <TileRect/>
                     </g>
                 </svg>

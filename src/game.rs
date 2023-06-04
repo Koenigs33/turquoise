@@ -1,50 +1,27 @@
-use std::collections::HashMap;
-
 use gloo_console::log;
 use rand::{seq::SliceRandom, thread_rng};
-use yew::{html, Component, Context, Html, Properties};
+use yew::{html, AttrValue, Component, Context, Html, Properties};
 
 use crate::components::{
     board::{CurrentRoundBoard, PlayerBoard},
-    pot::PotArea,
-    tile::TileColor,
+    pot::{PotArea, PotState, PotType},
+    tile::{TileColor, TilePosition, TileState},
 };
 
 const NUMBER_OF_TILES_PER_COLOR: usize = 20;
 
-#[derive(PartialEq, Clone)]
-pub struct PotState {
-    pub pots: HashMap<String, Vec<TileColor>>,
-    pub common_pot: Vec<TileColor>,
-}
-
-impl PotState {
-    pub fn new(pots: HashMap<String, Vec<TileColor>>) -> Self {
-        Self {
-            pots,
-            common_pot: Vec::new(),
-        }
-    }
-}
-
-#[derive(Default)]
-pub struct PlayerState {
-    current_round: Vec<Vec<TileColor>>,
-    player_board: Vec<Vec<Option<TileColor>>>,
-}
-
 pub struct Game {
-    pub pot_state: PotState,
-    pub players_state: HashMap<String, PlayerState>,
-    pub current_player: String,
-    pub tiles_bin: Vec<TileColor>,
-    pub tiles_reserve: Vec<TileColor>,
+    pub n_pots: u8,
+    pub tiles: Vec<TileState>,
+    pub current_player: AttrValue,
 }
 
 #[derive(Properties, PartialEq)]
 pub struct GameProps {}
 
-pub enum GameMsg {}
+pub enum GameMsg {
+    PotAreaUpdate(String, TileColor),
+}
 
 impl Component for Game {
     type Message = GameMsg;
@@ -60,10 +37,6 @@ impl Component for Game {
             _ => panic!("not supported"),
         };
         let current_player = players[0].into();
-        let mut players_state = HashMap::new();
-        for player in players {
-            players_state.insert(player.into(), PlayerState::default());
-        }
 
         // create a vector of tiles and shuffle it
         let mut tiles = vec![TileColor::Blue; NUMBER_OF_TILES_PER_COLOR];
@@ -71,35 +44,67 @@ impl Component for Game {
         tiles.extend(vec![TileColor::Yellow; NUMBER_OF_TILES_PER_COLOR]);
         tiles.extend(vec![TileColor::Green; NUMBER_OF_TILES_PER_COLOR]);
         tiles.extend(vec![TileColor::Purple; NUMBER_OF_TILES_PER_COLOR]);
+        let mut tiles: Vec<TileState> = tiles
+            .iter()
+            .enumerate()
+            .map(|(id, c)| TileState::new(id, (*c).clone()))
+            .collect();
         tiles.shuffle(&mut thread_rng());
 
+        let mut tiles_iter = tiles.iter_mut();
+
         // make the pot from the shuffled vector
-        let mut pots = HashMap::new();
-        for i in 1..=n_pots {
-            let pot_name = format!("pot_{}", i);
-            pots.insert(
-                pot_name,
-                (0..4)
-                    .map(|_| tiles.pop().expect("No more tiles"))
-                    .collect(),
-            );
+        for i in 0..n_pots {
+            for _ in 0..4 {
+                let mut tile = tiles_iter.next().expect("No more tiles");
+                tile.position = TilePosition::Pot(i);
+                log!(format!("adding {:?}", tile));
+            }
         }
-        let pot_state = PotState::new(pots);
 
         Self {
-            pot_state,
-            players_state,
+            n_pots,
+            tiles,
             current_player,
-            tiles_bin: Vec::new(),
-            tiles_reserve: tiles,
         }
     }
 
     fn view(&self, _ctx: &Context<Self>) -> Html {
+        let pot_area_update = _ctx
+            .link()
+            .callback(|(id, color)| GameMsg::PotAreaUpdate(id, color));
+
+        let mut pots = Vec::new();
+        for pot_id in 0..self.n_pots {
+            let mut tiles = Vec::new();
+            for tile in &self.tiles {
+                if let TilePosition::Pot(id) = tile.position {
+                    if id == pot_id {
+                        tiles.push((*tile).clone())
+                    }
+                }
+            }
+            pots.push(PotState {
+                pot_type: PotType::Pot(pot_id),
+                tiles,
+            })
+        }
+
+        let mut tiles = Vec::new();
+        for tile in &self.tiles {
+            if tile.position == TilePosition::CommonPot {
+                tiles.push((*tile).clone());
+            }
+        }
+        pots.push(PotState {
+            pot_type: PotType::Common,
+            tiles,
+        });
+
         html! {
             <>
                 <div>
-                    <PotArea pots_state={self.pot_state.clone()}/>
+                    <PotArea {pot_area_update} {pots} />
                 </div>
                 <div class="container">
                     <div class="row">
