@@ -20,7 +20,7 @@ pub struct Game {
 pub struct GameProps {}
 
 pub enum GameMsg {
-    PotAreaUpdate(String, TileColor),
+    PotAreaUpdate(u8),
 }
 
 impl Component for Game {
@@ -38,7 +38,7 @@ impl Component for Game {
         };
         let current_player = players[0].into();
 
-        // create a vector of tiles and shuffle it
+        // create a vector of tile states and shuffle it
         let mut tiles = vec![TileColor::Blue; NUMBER_OF_TILES_PER_COLOR];
         tiles.extend(vec![TileColor::Red; NUMBER_OF_TILES_PER_COLOR]);
         tiles.extend(vec![TileColor::Yellow; NUMBER_OF_TILES_PER_COLOR]);
@@ -47,7 +47,7 @@ impl Component for Game {
         let mut tiles: Vec<TileState> = tiles
             .iter()
             .enumerate()
-            .map(|(id, c)| TileState::new(id, (*c).clone()))
+            .map(|(id, c)| TileState::new(id as u8, (*c).clone()))
             .collect();
         tiles.shuffle(&mut thread_rng());
 
@@ -69,10 +69,17 @@ impl Component for Game {
         }
     }
 
-    fn view(&self, _ctx: &Context<Self>) -> Html {
-        let pot_area_update = _ctx
-            .link()
-            .callback(|(id, color)| GameMsg::PotAreaUpdate(id, color));
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+        match msg {
+            GameMsg::PotAreaUpdate(id) => {
+                log!(format!("received pot area update msg : {:?}", id))
+            }
+        };
+        true
+    }
+
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let pot_area_update = ctx.link().callback(|id| GameMsg::PotAreaUpdate(id));
 
         let mut pots = Vec::new();
         for pot_id in 0..self.n_pots {

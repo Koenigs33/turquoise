@@ -3,7 +3,7 @@ use yew::{function_component, html, AttrValue, Callback, Component, Context, Htm
 
 pub struct Tile {
     selected: bool,
-    id: usize,
+    id: u8,
 }
 
 #[derive(PartialEq, Clone, Debug)]
@@ -35,13 +35,13 @@ impl Default for TileColor {
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct TileState {
-    pub id: usize,
+    pub id: u8,
     pub color: TileColor,
     pub position: TilePosition,
 }
 
 impl TileState {
-    pub fn new(id: usize, color: TileColor) -> Self {
+    pub fn new(id: u8, color: TileColor) -> Self {
         Self {
             id,
             color,
@@ -64,8 +64,8 @@ pub enum TilePosition {
 pub struct TileProps {
     #[prop_or_default]
     pub color: TileColor,
-    pub click_handler: Callback<()>,
-    pub id: usize,
+    pub click_handler: Callback<u8>,
+    pub id: u8,
 }
 
 pub enum TileMsg {
@@ -94,7 +94,7 @@ impl Component for Tile {
         match msg {
             TileMsg::Clicked => {
                 log!(format!("Tile clicked : {:?}", self.id));
-                click_handler.emit(());
+                click_handler.emit(*id);
                 self.selected = !self.selected;
             }
         }

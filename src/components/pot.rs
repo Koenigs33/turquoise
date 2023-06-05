@@ -7,7 +7,7 @@ use super::tile::TileState;
 
 #[derive(PartialEq, Properties)]
 pub struct PotAreaProps {
-    pub pot_area_update: Callback<(String, TileColor)>,
+    pub pot_area_update: Callback<u8>,
     pub pots: Vec<PotState>,
 }
 
@@ -17,14 +17,13 @@ pub fn PotArea(props: &PotAreaProps) -> Html {
         pot_area_update,
         pots,
     } = props;
-    log!(format!("{:?}", pots));
     html! {
         <div class="p-big bg-info">
             <div class="row">
                 {
                     for pots.iter()
                         .filter(|pot| matches!(pot.pot_type, PotType::Pot(_)))
-                        .map(|pot| html!(<Pot tiles={pot.tiles.clone()}/>))
+                        .map(|pot| html!(<Pot tiles={pot.tiles.clone()} click_handler={pot_area_update}/>))
                 }
             </div>
             // <div class="row">
@@ -63,7 +62,7 @@ impl Component for CommonPot {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            PotMsg::TileClicked => {
+            PotMsg::TileClicked(id) => {
                 log!("Tile clicked (from common pot)")
             }
         }
@@ -98,10 +97,11 @@ pub struct Pot;
 #[derive(Properties, PartialEq)]
 pub struct PotProps {
     tiles: Vec<TileState>,
+    click_handler: Callback<u8>,
 }
 
 pub enum PotMsg {
-    TileClicked,
+    TileClicked(u8),
 }
 
 impl Component for Pot {
@@ -112,8 +112,19 @@ impl Component for Pot {
         Self
     }
 
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+        let click_handler = &ctx.props().click_handler;
+        match msg {
+            PotMsg::TileClicked(id) => {
+                log!("Tile clicked (from pot)");
+                click_handler.emit(id);
+            }
+        }
+        true
+    }
+
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let PotProps { tiles } = ctx.props();
+        let tiles = &ctx.props().tiles;
 
         html! {
             <div class="col-sm container-small">
@@ -121,7 +132,7 @@ impl Component for Pot {
                     <div class="row bg-gray-light border">
                         {
                             for tiles.iter().map(|s| {
-                                let tile_clicked = ctx.link().callback(|_| PotMsg::TileClicked);
+                                let tile_clicked = ctx.link().callback(|id| PotMsg::TileClicked(id));
 
                                 html!{
                                     <Tile

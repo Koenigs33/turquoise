@@ -1,13 +1,7 @@
 use components::navbar;
 use yew::prelude::*;
 
-use crate::{
-    components::{
-        board::{CurrentRoundBoard, PlayerBoard},
-        pot::PotArea,
-    },
-    game::Game,
-};
+use crate::{ game::Game};
 
 mod components;
 mod game;
