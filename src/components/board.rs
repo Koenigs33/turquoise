@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use yew::{function_component, html, html_nested, Callback, Component, Context, Html, Properties};
 
-use crate::components::tile::TileColor;
+use crate::components::tile::tile::TileColor;
 
 const COLOR_SEQUENCE: [TileColor; 5] = [
     TileColor::Blue,

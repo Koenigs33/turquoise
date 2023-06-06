@@ -4,8 +4,11 @@ use yew::{html, AttrValue, Component, Context, Html, Properties};
 
 use crate::components::{
     board::{CurrentRoundBoard, PlayerBoard},
-    pot::{PotArea, PotState, PotType},
-    tile::{TileColor, TilePosition, TileState},
+    pot::{
+        potarea::{PotArea, PotAreaUpdate},
+        PotState, PotType,
+    },
+    tile::tile::{TileColor, TilePosition, TileState},
 };
 
 const NUMBER_OF_TILES_PER_COLOR: usize = 20;
@@ -20,7 +23,7 @@ pub struct Game {
 pub struct GameProps {}
 
 pub enum GameMsg {
-    PotAreaUpdate(u8),
+    PotAreaUpdate(PotAreaUpdate),
 }
 
 impl Component for Game {
@@ -58,7 +61,6 @@ impl Component for Game {
             for _ in 0..4 {
                 let mut tile = tiles_iter.next().expect("No more tiles");
                 tile.position = TilePosition::Pot(i);
-                log!(format!("adding {:?}", tile));
             }
         }
 
@@ -71,15 +73,15 @@ impl Component for Game {
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            GameMsg::PotAreaUpdate(id) => {
-                log!(format!("received pot area update msg : {:?}", id))
+            GameMsg::PotAreaUpdate(update) => {
+                log!(format!("received pot area update msg : {:?}", update))
             }
         };
         true
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let pot_area_update = ctx.link().callback(|id| GameMsg::PotAreaUpdate(id));
+        let update = ctx.link().callback(|update| GameMsg::PotAreaUpdate(update));
 
         let mut pots = Vec::new();
         for pot_id in 0..self.n_pots {
@@ -111,7 +113,7 @@ impl Component for Game {
         html! {
             <>
                 <div>
-                    <PotArea {pot_area_update} {pots} />
+                    <PotArea {update} {pots} />
                 </div>
                 <div class="container">
                     <div class="row">
