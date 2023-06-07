@@ -74,7 +74,21 @@ impl Component for Game {
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             GameMsg::PotAreaUpdate(update) => {
-                log!(format!("received pot area update msg : {:?}", update))
+                let PotAreaUpdate::TileClicked {
+                    pot_id,
+                    tile_id: _,
+                    tile_color,
+                } = update;
+                self.tiles
+                    .iter_mut()
+                    .filter(|t| {
+                        if let TilePosition::Pot(i) = t.position {
+                            i as usize == pot_id && t.color == tile_color
+                        } else {
+                            false
+                        }
+                    })
+                    .for_each(|t| t.selected = !t.selected);
             }
         };
         true
